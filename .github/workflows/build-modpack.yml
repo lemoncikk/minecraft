@@ -2,7 +2,7 @@ name: Build Modpack
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
       - '**.jar'
       - '.github/workflows/**'
