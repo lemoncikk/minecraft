@@ -1,0 +1,45 @@
+name: Build Modpack
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.jar'
+      - '.github/workflows/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: echo "VERSION=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_OUTPUT
+
+      - name: Create modpack archive
+        run: |
+          mkdir -p modpack/mods
+          # Копируем только .jar файлы из корня
+          cp *.jar modpack/mods/ 2>/dev/null || true
+          cd modpack
+          zip -r ../modpack-${{ steps.version.outputs.VERSION }}.zip mods
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.VERSION }}
+          name: "Модпак ${{ steps.version.outputs.VERSION }}"
+          body: |
+            ## 📦 Обновление модпака
+            
+            **Дата:** ${{ steps.version.outputs.VERSION }}
+            
+            ### Установка:
+            1. Скачайте архив
+            2. Распакуйте папку `mods/` в `.minecraft/`
+            3. Запустите игру
+          files: modpack-*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
